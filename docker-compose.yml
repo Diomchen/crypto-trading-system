@@ -1,0 +1,115 @@
+# /opt/crypto-trading-infra/docker-compose.yml
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: crypto-postgres
+    environment:
+      POSTGRES_DB: crypto_trading
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: StrongPassword123!
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    restart: unless-stopped
+    networks:
+      - crypto-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: crypto-redis
+    command: redis-server --requirepass "RedisPassword123!"
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    networks:
+      - crypto-network
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: crypto-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: RabbitPassword123!
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    restart: unless-stopped
+    networks:
+      - crypto-network
+
+  # 数据库管理工具
+  adminer:
+    image: adminer:4.8.1
+    container_name: crypto-adminer
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    restart: unless-stopped
+    networks:
+      - crypto-network
+
+  # Redis管理工具
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: crypto-redis-commander
+    environment:
+      REDIS_HOSTS: "local:redis:6379"
+      REDIS_PASSWORD: "RedisPassword123!"
+    ports:
+      - "8081:8081"
+    depends_on:
+      - redis
+    restart: unless-stopped
+    networks:
+      - crypto-network
+
+  # 监控工具
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: crypto-prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    restart: unless-stopped
+    networks:
+      - crypto-network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: crypto-grafana
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: GrafanaPassword123!
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    restart: unless-stopped
+    networks:
+      - crypto-network
+
+volumes:
+  postgres_data:
+  redis_data:
+  rabbitmq_data:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  crypto-network:
+    driver: bridge
