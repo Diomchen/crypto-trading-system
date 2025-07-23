@@ -22,8 +22,8 @@ type UserService interface {
 
 type RegisterRequest struct {
 	Username string `json:"username" binding:"required,min=3,max=50"`
-	Password string `json:"password" binding:"required,email"`
-	Email    string `json:"email" binding:"required,min=8"`
+	Password string `json:"password" binding:"required,min=8"`
+	Email    string `json:"email" binding:"required,email"`
 }
 type RegisterResponse struct {
 	User  *model.User `json:"user"`
@@ -41,7 +41,7 @@ type LoginResponse struct {
 }
 
 type GetProfileRequest struct {
-	UserID uint `json:"user_id"`
+	UserID uint `json:"user_id" form:"user_id"`
 }
 
 type GetProfileResponse struct {
@@ -107,6 +107,11 @@ func (u *userService) Register(ctx context.Context, req *RegisterRequest) (*Regi
 		Password: req.Password,
 	}
 
+	if err := user.SetPassword(req.Password); err != nil {
+		u.logger.WithError(err).Error("failed to set password")
+		return nil, err
+	}
+
 	if err := u.userRepo.Create(ctx, user); err != nil {
 		u.logger.WithError(err).Error("failed to create user")
 		return nil, err
@@ -170,7 +175,11 @@ func (u *userService) GetProfile(ctx context.Context, req *GetProfileRequest) (*
 	// 先从缓存查找
 	cacheKey := fmt.Sprintf("user:%d", userID)
 	if exists, _ := u.cache.Exists(ctx, cacheKey); exists {
-		// 这里可以实现缓存获取逻辑
+		var user model.User
+		if err := u.cache.GetJSON(ctx, cacheKey, &user); err == nil {
+			return &GetProfileResponse{User: &user}, nil
+		}
+
 	}
 
 	// 从数据库获取

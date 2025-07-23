@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
-	"gorm.io/gorm"
 )
 
 type User struct {
@@ -19,7 +18,6 @@ type User struct {
 	Orders    []trading.Order  `json:"orders,omitempty" gorm:"foreignKey:UserID"`
 	CreatedAt time.Time        `json:"created_at"`
 	UpdatedAt time.Time        `json:"updated_at"`
-	DeletedAt gorm.DeletedAt   `json:"-" gorm:"index"`
 }
 
 type UserStatus string

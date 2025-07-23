@@ -38,6 +38,7 @@ type RedisConfig struct {
 	Port     string `mapstructure:"port"`
 	Password string `mapstructure:"password"`
 	DB       int    `mapstructure:"db"`
+	Prefix   string `mapstructure:"prefix"`
 }
 
 type RabbitMQConfig struct {
@@ -144,6 +145,18 @@ func (c *Config) GetDatabaseDSN() string {
 
 func (c *Config) GetRedisAddr() string {
 	return fmt.Sprintf("%s:%s", c.Redis.Host, c.Redis.Port)
+}
+
+func (c *Config) GetRedisPassword() string {
+	return fmt.Sprintf("%s", c.Redis.Password)
+}
+
+func (c *Config) GetRedisDB() int {
+	return c.Redis.DB
+}
+
+func (c *Config) GetPrefix() string {
+	return c.Redis.Prefix
 }
 
 func (c *Config) GetRabbitMQURL() string {

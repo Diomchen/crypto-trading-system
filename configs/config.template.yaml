@@ -1,0 +1,88 @@
+# configs/config.template.yaml
+# 加密货币交易系统配置模板
+# 请复制此文件为 config.yaml 并根据你的环境修改相应配置
+
+# 服务器配置
+server:
+  host: "localhost"                    # 服务器主机地址
+  port: "8080"                        # 服务器端口 (字符串格式)
+  read_timeout: 30                    # 读取超时时间 (秒)
+  write_timeout: 30                   # 写入超时时间 (秒)
+  mode: "debug"                       # 运行模式: debug, release, test
+
+# 数据库配置 (PostgreSQL)
+database:
+  host: "YOUR_DATABASE_HOST"          # 数据库主机地址 (例如: localhost 或 IP地址)
+  port: "5432"                        # PostgreSQL 默认端口
+  user: "YOUR_DB_USERNAME"            # 数据库用户名
+  password: "YOUR_DB_PASSWORD"        # 数据库密码 (请使用强密码)
+  database: "crypto_trading"          # 数据库名称
+  ssl_mode: "disable"                 # SSL模式: disable, require, verify-ca, verify-full
+
+# Redis 缓存配置
+redis:
+  host: "YOUR_REDIS_HOST"             # Redis 主机地址
+  port: "6379"                        # Redis 默认端口
+  password: "YOUR_REDIS_PASSWORD"     # Redis 密码 (如果设置了密码)
+  db: 0                               # Redis 数据库编号 (0-15)
+  prefix: ""                          # 键名前缀 (可选)
+
+# RabbitMQ 消息队列配置
+rabbitmq:
+  host: "YOUR_RABBITMQ_HOST"          # RabbitMQ 主机地址
+  port: "5672"                        # RabbitMQ 默认端口
+  user: "YOUR_RABBITMQ_USER"          # RabbitMQ 用户名
+  password: "YOUR_RABBITMQ_PASSWORD"  # RabbitMQ 密码
+  vhost: "/"                          # 虚拟主机 (默认为 "/")
+
+# JWT 认证配置
+jwt:
+  secret: "CHANGE_THIS_TO_A_SECURE_SECRET_KEY"  # JWT 签名密钥 (生产环境必须更改!)
+  expires_in: 3600                    # 访问令牌过期时间 (秒) - 1小时
+  refresh_in: 604800                  # 刷新令牌过期时间 (秒) - 7天
+  issuer: "crypto-trading-system"     # JWT 发行者标识
+
+# 日志配置
+log:
+  level: "debug"                      # 日志级别: debug, info, warn, error
+  format: "json"                      # 日志格式: json, text
+  output: "stdout"                    # 日志输出: stdout, stderr, 或文件路径
+
+# ==========================================
+# 配置说明和建议
+# ==========================================
+
+# 1. 安全建议:
+#    - 生产环境中请更改所有默认密码
+#    - JWT secret 必须使用强随机字符串
+#    - 数据库密码应包含大小写字母、数字和特殊字符
+#    - 考虑启用数据库 SSL 连接
+
+# 2. 性能调优:
+#    - 根据服务器性能调整 read_timeout 和 write_timeout
+#    - Redis 连接池大小可通过环境变量配置
+#    - 数据库连接池参数可在代码中调整
+
+# 3. 环境变量覆盖:
+#    配置项可通过环境变量覆盖，格式为 CRYPTO_SECTION_KEY
+#    例如: CRYPTO_DATABASE_HOST=localhost
+#          CRYPTO_JWT_SECRET=your-secret-key
+
+# 4. 开发环境快速配置:
+#    如果使用 Docker Compose，可以使用以下配置:
+#    - database.host: "localhost" (如果数据库在本地)
+#    - redis.host: "localhost"
+#    - rabbitmq.host: "localhost"
+
+# 5. 生产环境配置:
+#    - server.mode: "release"
+#    - log.level: "info" 或 "warn"
+#    - 使用真实的服务器IP地址
+#    - 启用数据库SSL: ssl_mode: "require"
+
+# 6. 端口说明:
+#    - 8080: 应用服务器端口
+#    - 5432: PostgreSQL 数据库端口
+#    - 6379: Redis 缓存端口
+#    - 5672: RabbitMQ AMQP 端口
+#    - 15672: RabbitMQ 管理界面端口 (如果启用)

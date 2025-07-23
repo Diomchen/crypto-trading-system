@@ -2,6 +2,7 @@ package cache
 
 import (
 	"context"
+	"crypto_trading_system/pkg/config"
 	"encoding/json"
 	"fmt"
 	"time"
@@ -25,11 +26,11 @@ type CacheMetrics struct {
 	errors int64
 }
 
-func NewRedisClient(addr string, password string, db int, prefix string) (*RedisClient, error) {
+func NewRedisClient(cfg *config.Config) (*RedisClient, error) {
 	rdb := redis.NewClient(&redis.Options{
-		Addr:         addr,
-		Password:     password,
-		DB:           db,
+		Addr:         cfg.GetRedisAddr(),
+		Password:     cfg.GetRedisPassword(),
+		DB:           cfg.GetRedisDB(),
 		PoolSize:     20,
 		PoolTimeout:  30 * time.Second,
 		ReadTimeout:  30 * time.Second,
@@ -49,7 +50,7 @@ func NewRedisClient(addr string, password string, db int, prefix string) (*Redis
 
 	return &RedisClient{
 		client:  rdb,
-		prefix:  prefix,
+		prefix:  cfg.GetPrefix(),
 		metrics: &CacheMetrics{},
 	}, nil
 }
@@ -160,4 +161,12 @@ func (r *RedisClient) TTL(ctx context.Context, key string) (time.Duration, error
 	}
 
 	return ttl, nil
+}
+
+func (r *RedisClient) Close() error {
+	return r.client.Close()
+}
+
+func (r *RedisClient) Health() error {
+	return r.client.Ping(context.Background()).Err()
 }
