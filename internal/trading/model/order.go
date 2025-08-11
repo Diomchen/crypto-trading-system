@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/shopspring/decimal"
-	"gorm.io/gorm"
 )
 
 type Order struct {
@@ -20,7 +19,6 @@ type Order struct {
 	Trades       []Trade         `json:"trades,omitempty" gorm:"foreignKey:BuyOrderID;foreignKey:SellOrderID"`
 	CreatedAt    time.Time       `json:"created_at"`
 	UpdatedAt    time.Time       `json:"updated_at"`
-	DeletedAt    gorm.DeletedAt  `json:"-" gorm:"index"`
 }
 
 type OrderSide string
@@ -33,16 +31,16 @@ const (
 )
 
 const (
-	OrderTypeMarket OrderType = "market"
-	OrderTypeLimit  OrderType = "limit"
+	OrderTypeMarket OrderType = "market" // 市价
+	OrderTypeLimit  OrderType = "limit"  // 限价
 )
 
 const (
-	OrderStatusPending   OrderStatus = "pending"
-	OrderStatusPartial   OrderStatus = "partial"
-	OrderStatusFilled    OrderStatus = "filled"
-	OrderStatusCancelled OrderStatus = "cancelled"
-	OrderStatusRejected  OrderStatus = "rejected"
+	OrderStatusPending   OrderStatus = "pending"   // 订单已提交但未成交
+	OrderStatusPartial   OrderStatus = "partial"   // 订单部分数量已成交
+	OrderStatusFilled    OrderStatus = "filled"    // 订单全部数量已成交
+	OrderStatusCancelled OrderStatus = "cancelled" // 用户主动取消订单
+	OrderStatusRejected  OrderStatus = "rejected"  // 系统拒绝订单（余额不足）
 )
 
 type Trade struct {
@@ -80,17 +78,21 @@ func (o *Order) IsActive() bool {
 }
 
 func (o *Order) CanMatch(other *Order) bool {
+	// 同方向，同币对
 	if o.Symbol != other.Symbol || o.Side == other.Side {
 		return false
 	}
 
+	// 市价订单可以任意成交
 	if o.Type == OrderTypeMarket || other.Type == OrderTypeMarket {
 		return true
 	}
 
 	if o.Side == OrderSideBuy {
+		// 买单价格 >= 卖单价格
 		return o.Price.GreaterThanOrEqual(other.Price)
 	}
 
+	// 卖单价格 <= 买单价格
 	return o.Price.LessThanOrEqual(other.Price)
 }
