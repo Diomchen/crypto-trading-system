@@ -114,7 +114,7 @@ func NewMatchingEngine(logger *logger.Logger) MatchingEngine {
 		orderBooks: make(map[string]*OrderBook),
 		logger:     logger,
 		orderChan:  make(chan *OrderRequest, 1000),
-		tradeChan:  make(chan *model.Trade, 100),
+		tradeChan:  make(chan *model.Trade, 1000),
 		stopChan:   make(chan struct{}),
 	}
 }
@@ -129,7 +129,10 @@ func (e *matchingEngine) Start(ctx context.Context) {
 func (e *matchingEngine) Stop() {
 	e.logger.Info("matching engine stop")
 	close(e.stopChan)
+
 	e.wg.Wait()
+
+	close(e.tradeChan)
 }
 
 func (e *matchingEngine) ProcessOrder(ctx context.Context, order *model.Order) ([]*model.Trade, error) {
