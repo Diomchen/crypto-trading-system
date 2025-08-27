@@ -1,0 +1,155 @@
+syntax = "proto3";
+
+package trading.v1;
+
+option go_package = "crypto_trading_system/api/proto/trading";
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+service TradingService { 
+    rpc PlaceOrder(PlaceOrderRequest) returns (PlaceOrderResponse) {
+        option (google.api.http) = {
+            post: "/api/v1/trading/order"
+            body: "*"
+        };
+    }
+
+    rpc CancelOrder(CancelOrderRequest) returns (CancelOrderResponse) {
+        option (google.api.http) = {
+            delete: "/api/v1/trading/order/{order_id}"
+        };
+    }
+
+    rpc GetOrder(GetOrderRequest) returns (GetOrderResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/trading/order/{order_id}"
+        };
+    }
+
+    rpc GetUserOrders(GetUserOrdersRequest) returns (GetUserOrdersResponse) {
+        option (google.api.http) = {
+            get: "/api/v1/trading/orders"
+        };
+    }
+
+    rpc GetOrderBook(GetOrderBookRequest) returns (GetOrderBookResponse) { 
+        option (google.api.http) = {
+            get: "/api/v1/market/orderbook/{symbol}"
+        };
+    }
+
+    // 获取交易记录
+    rpc GetTrades(GetTradesRequest) returns (GetTradesResponse) { 
+        option (google.api.http) = {
+            get: "/api/v1/market/trades/{symbol}"
+        };
+    }
+}
+
+message PlaceOrderRequest {
+    uint64 user_id = 1;
+    string symbol = 2;
+    string side = 3; 
+    string type = 4; 
+    string amount = 5;
+    string price = 6;
+}
+
+message PlaceOrderResponse {
+    bool success = 1;
+    string message = 2;
+    Order order = 3;
+}
+
+message CancelOrderRequest {
+    uint64 user_id = 1;
+    uint64 order_id = 2;
+}
+
+message CancelOrderResponse {
+    bool success = 1;
+    string message = 2;
+}
+
+message GetOrderRequest {
+    uint64 order_id = 1;
+}
+
+message GetOrderResponse {
+    bool success = 1;
+    string message = 2;
+    Order order = 3;
+}
+
+message GetUserOrdersRequest {
+    uint64 user_id = 1;
+    int32 offset = 2;
+    int32 limit = 3;
+}
+
+message GetUserOrdersResponse {
+    bool success = 1;
+    string message = 2;
+    repeated Order orders = 3;
+    int32 total = 4;
+}
+
+message GetOrderBookRequest {
+    string symbol = 1;
+    int32 depth = 2;
+}
+
+message GetOrderBookResponse {
+    bool success = 1;
+    string message = 2;
+    OrderBook order_book = 3;
+}
+
+message GetTradesRequest {
+    string symbol = 1;
+    int32 limit = 2;
+}
+
+message GetTradesResponse {
+    bool success = 1;
+    string message = 2;
+    repeated Trade trades = 3;
+}
+
+message Order {
+    uint64 id = 1;
+    uint64 user_id = 2;
+    string symbol = 3;
+    string side = 4;
+    string type = 5;
+    string amount = 6;
+    string price = 7;
+    string filled_amount = 8;
+    string status = 9;
+    google.protobuf.Timestamp created_at = 10;
+    google.protobuf.Timestamp updated_at = 11;
+}
+
+message OrderBook {
+    string symbol = 1;
+    repeated OrderBookLevel bids = 2;
+    repeated OrderBookLevel asks = 3;
+    string last_price = 4;
+    google.protobuf.Timestamp last_update = 5;
+}
+
+message OrderBookLevel {
+    string price = 1;
+    string amount = 2;
+}
+
+message Trade {
+    uint64 id = 1;
+    uint64 buy_order_id = 2;
+    uint64 sell_order_id = 3;
+    string symbol = 4;
+    string amount = 5;
+    string price = 6;
+    google.protobuf.Timestamp created_at = 7;
+}

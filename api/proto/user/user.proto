@@ -1,0 +1,120 @@
+syntax = "proto3";
+
+package user.v1;
+
+option go_package = "crypto_trading_system/api/proto/user";
+
+import "google/api/annotations.proto";
+// import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+service UserService {
+    rpc Register(RegisterRequest) returns (RegisterResponse){
+        option (google.api.http) = {
+            post: "/api/v1/auth/register"
+            body: "*"
+        };
+    }
+
+    rpc Login(LoginRequest) returns (LoginResponse){
+        option (google.api.http) = {
+            post: "/api/v1/auth/login"
+            body: "*"
+        };
+    }
+
+    rpc GetUser(GetUserRequest) returns (GetUserResponse){
+        option (google.api.http) = {
+            get: "/api/v1/users/{user_id}"
+        };
+    }
+
+    rpc UpdateUser(UpdateUserRequest) returns (UpdateUserResponse){
+        option (google.api.http) = {
+            put: "/api/v1/users/{user_id}"
+            body: "*"
+        };
+    }
+
+    rpc ValidateToken(ValidateTokenRequest) returns (ValidateTokenResponse);
+}
+
+message RegisterRequest {
+    string username = 1;
+    string email = 2;
+    string password = 3;
+}
+
+message RegisterResponse {
+    bool success = 1;
+    string message = 2;
+    User user = 3;
+    string token = 4;
+}
+
+message LoginRequest {
+    string email = 1;
+    string password = 2;
+}
+
+message LoginResponse {
+    bool success = 1;
+    string message = 2;
+    User user = 3;
+    string token = 4;
+}
+
+message GetUserRequest {
+    uint64 user_id = 1;
+}
+
+message GetUserResponse {
+    bool success = 1;
+    string message = 2;
+    User user = 3;
+}
+
+message UpdateUserRequest {
+    uint64 user_id = 1;
+    string first_name = 2;
+    string last_name = 3;
+    string phone = 4;
+    string country = 5;
+    string city = 6;
+}
+
+message UpdateUserResponse {
+    bool success = 1;
+    string message = 2;
+    User user = 3;
+}
+
+message ValidateTokenRequest {
+    string token = 1;
+}
+
+message ValidateTokenResponse {
+    bool valid = 1;
+    uint64 user_id = 2;
+    string username = 3;
+}
+
+message User {
+    uint64 id = 1;
+    string username = 2;
+    string email = 3;
+    string status = 4;
+    google.protobuf.Timestamp created_at = 5;
+    google.protobuf.Timestamp updated_at = 6;
+    UserProfile profile = 7;
+}
+
+message UserProfile {
+    uint64 id = 1;
+    uint64 user_id = 2;
+    string first_name = 3;
+    string last_name = 4;
+    string phone = 5;
+    string country = 6;
+    string city = 7;
+}
